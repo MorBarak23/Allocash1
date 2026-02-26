@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_light_cyan">#ECF5F6</color>
+    <color name="brand_teal">#00BFA5</color>
+    <color name="brand_teal_dark">#009688</color>
+    <color name="card_white">#FFFFFF</color>
+
+    <color name="text_primary">#1E293B</color>
+    <color name="text_secondary">#64748B</color>
+
+    <color name="expense_red">#F87171</color>
+    <color name="income_teal">#00BFA5</color>
+
+    <color name="white_translucent">#CCFFFFFF</color>
+
+    <color name="balance_start">#00B4B4</color>
+    <color name="balance_end">#02C39A</color>
+    <color name="glass_white_alpha">#33FFFFFF</color>
+
+    <color name="square_subtle_start">#E6F7F6</color>
+    <color name="square_subtle_end">#EBF9F3</color>
+
+    <color name="square_bold_start">#8EDDD9</color>
+    <color name="square_bold_end">#A4E8D6</color>
+
+    <color name="logo_start">#0FB2E3</color>
+    <color name="logo_mid">#26D1AB</color>
+    <color name="logo_end">#49DF82</color>
+    <color name="logo_highlight">#A8FFED</color>
+
+
+
+</resources>

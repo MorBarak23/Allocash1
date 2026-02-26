@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="card_white">#1E293B</color>
+    <color name="bg_light_cyan">#0F172A</color>
+    <color name="text_primary">#F8FAFC</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="brand_teal">#2DD4BF</color>
+    <color name="white_translucent">#1AFFFFFF</color>
+    <color name="square_subtle_start">#1E293B</color>
+    <color name="square_subtle_end">#334155</color>
+</resources>

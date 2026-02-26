@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "512776617783",
+    "project_id": "allocash-260ce",
+    "storage_bucket": "allocash-260ce.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:512776617783:android:13e31e0d46fcb28194e4b2",
+        "android_client_info": {
+          "package_name": "com.mor.allocash1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrsyVEB8nEWx2BaYX19MoT8DJNGRQCCfk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
