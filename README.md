@@ -58,13 +58,13 @@ Allocash is built on a modern, scalable architecture:
 </p>
 
 <p align="center">
-  <img src="Screenshots/img_my_profile.png" width="260" title="Personal Profile">
-  <img src="Screenshots/img_accounts.png" width="260" title="Family Management">
-  <img src="Screenshots/img_settings.png" width="260" title="App Settings">
+  <img src="Screenshots/img_user.png" width="260" title="Personal Profile">
+  <img src="Screenshots/img_my_profile.png" width="260" title="Family Management">
+  <img src="Screenshots/img_accounts.png" width="260" title="App Settings">
 </p>
 
 <p align="center">
-  <img src="Screenshots/img_user.png" width="260" title="User Identity">
+  <img src="Screenshots/img_settings.png" width="260" title="User Identity">
 </p>
 
 ---
