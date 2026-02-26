@@ -48,12 +48,12 @@ Allocash is built on a modern, scalable architecture:
 <p align="center">
   <img src="Screenshots/img_home_page1.png" width="260" title="Main Dashboard"> 
   <img src="Screenshots/img_home_page2.png" width="260" title="Budget Management" alt="">
-  <img src="Screenshots/img_enter_page.png" width="260" title="Welcome Screen">
+  <img src="Screenshots/img_home_page3.png" width="260" title="Welcome Screen">
 </p>
 
 <p align="center">
   <img src="Screenshots/img_recent_actions.png" width="260" title="Recent Transactions">
-  <img src="Screenshots/img_home_page3.png" width="260" title="Detailed Analytics">
+  <img src="Screenshots/img_enter_page.png" width="260" title="Detailed Analytics">
   <img src="Screenshots/img_history.png" width="260" title="Monthly History">
 </p>
 
