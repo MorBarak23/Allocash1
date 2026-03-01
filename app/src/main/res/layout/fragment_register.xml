@@ -6,20 +6,35 @@
     android:padding="24dp"
     android:gravity="center_horizontal">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <FrameLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Create Account"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="@color/text_primary"
-        android:layout_marginTop="40dp" />
+        android:layout_marginTop="16dp">
+
+        <ImageView
+            android:id="@+id/btn_reg_back"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="start|center_vertical"
+            android:src="@drawable/ic_back"
+            android:contentDescription="Back to Login"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Create Account"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary" />
+    </FrameLayout>
 
     <EditText
         android:id="@+id/input_reg_name"
         android:layout_width="match_parent"
         android:layout_height="55dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="38dp"
         android:background="@drawable/bg_input_field"
         android:hint="Full Name"
         android:inputType="textPersonName"
@@ -29,7 +44,7 @@
         android:id="@+id/input_reg_email"
         android:layout_width="match_parent"
         android:layout_height="55dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="20dp"
         android:background="@drawable/bg_input_field"
         android:hint="Email Address"
         android:inputType="textEmailAddress"
@@ -39,7 +54,7 @@
         android:id="@+id/input_reg_password"
         android:layout_width="match_parent"
         android:layout_height="55dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="20dp"
         android:background="@drawable/bg_input_field"
         android:hint="Password"
         android:inputType="textPassword"

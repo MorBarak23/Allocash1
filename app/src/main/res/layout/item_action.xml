@@ -7,7 +7,11 @@
     android:layout_marginBottom="16dp"
     app:cardBackgroundColor="@color/card_white"
     app:cardCornerRadius="24dp"
-    app:cardElevation="1dp">
+    android:elevation="8dp"
+    app:cardElevation="0dp"
+    app:strokeColor="#DAE0E9"
+    app:strokeWidth="1dp"
+    >
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -85,7 +89,8 @@
             android:layout_width="0dp"
             android:layout_height="2dp"
             android:layout_marginTop="16dp"
-            android:background="@color/white_translucent"
+            android:background="@color/text_secondary"
+            android:alpha="0.3"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/lbl_title"
             app:layout_constraintTop_toBottomOf="@id/pb_monthly" />

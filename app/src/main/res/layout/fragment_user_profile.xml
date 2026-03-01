@@ -32,7 +32,7 @@
             android:layout_marginTop="28dp"
             android:padding="6dp"
             android:src="@drawable/ic_back"
-            app:tint="@color/card_white"
+            app:tint="@color/card_white2"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -43,7 +43,7 @@
             android:layout_marginStart="24dp"
             app:cardCornerRadius="40dp"
             app:cardElevation="8dp"
-            app:cardBackgroundColor="@color/card_white"
+            app:cardBackgroundColor="@color/card_white2"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"

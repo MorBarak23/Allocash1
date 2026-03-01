@@ -12,6 +12,7 @@ import com.mor.allocash1.ui.adapters.ActionAdapter
 import com.mor.allocash1.data.local.ActionDatabase
 import com.mor.allocash1.ui.interfaces.OnActionUpdateListener
 import com.mor.allocash1.R
+import com.mor.allocash1.data.cloud.FireStoreManager
 import com.mor.allocash1.data.local.UserData
 import com.mor.allocash1.databinding.FragmentHomeBinding
 
@@ -50,42 +51,40 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnActionUpdateListener {
 
     // Fetches and displays current financial totals from the database.
     private fun updateSummaryCards() {
-        // Using optimized calculation methods defined in ActionDatabase.kt
+        val safeContext = context ?: return
+
         val income = ActionDatabase.getTotalIncome()
         val expense = ActionDatabase.getTotalExpense()
         val balance = income - expense
 
-        // Logic to show actual amount or mask it with bullets (•)
         if (UserData.isBalanceVisible) {
             lblBalance.text = UserData.formatCurrency(balance)
+            // FIX: Change R.id to R.drawable
             icShowBalance.setImageResource(R.drawable.ic_eye)
         } else {
             val formatted = UserData.formatCurrency(balance)
-            // Replaces every character in the formatted balance with a bullet point
             lblBalance.text = "•".repeat(formatted.length)
+            // FIX: Change R.id to R.drawable
             icShowBalance.setImageResource(R.drawable.ic_covered)
         }
 
         lblIncome.text = UserData.formatCurrency(income)
         lblExpense.text = UserData.formatCurrency(expense)
 
-        // Calculate Savings Percentage (Rate = Balance / Total Income * 100)
         val savingsRate = if (income > 0) (balance / income) * 100 else 0.0
         val sign = if (savingsRate >= 0) "+" else ""
         lblBalanceTrend.text = "$sign${String.format("%.1f", savingsRate)}% saved this month"
 
-        // Dynamic color change based on savings performance
         val trendColor = if (savingsRate >= 0) R.color.card_white else R.color.expense_red
-        lblBalanceTrend.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), trendColor))
+        lblBalanceTrend.setTextColor(androidx.core.content.ContextCompat.getColor(safeContext, trendColor))
 
-        // Status logic: Green if balance >= goal, Red if balance < goal
         if (::lblMonthlySaving.isInitialized) {
             val isGoalMet = balance >= UserData.monthlySavingsGoal
             icDot.setBackgroundResource(if (isGoalMet) R.drawable.ic_circle_green else R.drawable.ic_circle_red)
             lblTrackStatus.text = if (isGoalMet) "On Track" else "Try Harder"
 
             val statusColor = if (isGoalMet) R.color.brand_teal else R.color.expense_red
-            lblTrackStatus.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), statusColor))
+            lblTrackStatus.setTextColor(androidx.core.content.ContextCompat.getColor(safeContext, statusColor))
         }
     }
 
@@ -210,29 +209,42 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnActionUpdateListener {
 
     // Listens to all actions and handles monthly resets automatically
     private fun fetchDataFromFirebase() {
-        com.mor.allocash1.data.cloud.FireStoreManager.listenToAllActions { actions ->
-            ActionDatabase.updateActions(actions)
-
-            val incomes = actions.filter { it.category == com.mor.allocash1.data.classes.CategoryType.INCOME }
-            val expenses = actions.filter { it.category != com.mor.allocash1.data.classes.CategoryType.INCOME }
-
-            // Manage visibility of empty states
-            binding.rvIncomes.visibility = if (incomes.isEmpty()) View.GONE else View.VISIBLE
-            view?.findViewById<View>(R.id.layout_empty_income)?.visibility = if (incomes.isEmpty()) View.VISIBLE else View.GONE
-            incomeAdapter.updateList(incomes)
-
-            binding.rvExpenses.visibility = if (expenses.isEmpty()) View.GONE else View.VISIBLE
-            view?.findViewById<View>(R.id.layout_empty_expense)?.visibility = if (expenses.isEmpty()) View.VISIBLE else View.GONE
-            expenseAdapter.updateList(expenses)
-
-            updateSummaryCards()
-            refreshCurrencyDisplay()
+        // 1. Profile Listener
+        FireStoreManager.listenToUserProfile {
+            if (isAdded && view != null) { // Essential safety check
+                view?.findViewById<TextView>(R.id.lbl_user_name)?.text = UserData.name
+                refreshCurrencyDisplay()
+            }
         }
 
-        // Transactions listener remains the same for history tracking
-        com.mor.allocash1.data.cloud.FireStoreManager.listenToTransactions { transactions ->
-            ActionDatabase.updateTransactions(transactions)
-            expenseAdapter.notifyDataSetChanged()
+        // 2. Actions Listener
+        FireStoreManager.listenToAllActions { actions ->
+            if (isAdded && view != null) { // Essential safety check
+                ActionDatabase.updateActions(actions)
+
+                val incomes = actions.filter { it.category == com.mor.allocash1.data.classes.CategoryType.INCOME }
+                val expenses = actions.filter { it.category != com.mor.allocash1.data.classes.CategoryType.INCOME }
+
+                binding.rvIncomes.visibility = if (incomes.isEmpty()) View.GONE else View.VISIBLE
+                view?.findViewById<View>(R.id.layout_empty_income)?.visibility = if (incomes.isEmpty()) View.VISIBLE else View.GONE
+                incomeAdapter.updateList(incomes)
+
+                binding.rvExpenses.visibility = if (expenses.isEmpty()) View.GONE else View.VISIBLE
+                view?.findViewById<View>(R.id.layout_empty_expense)?.visibility = if (expenses.isEmpty()) View.VISIBLE else View.GONE
+                expenseAdapter.updateList(expenses)
+
+                updateSummaryCards()
+                refreshCurrencyDisplay()
+            }
+        }
+
+        // 3. Transactions Listener
+        FireStoreManager.listenToTransactions { transactions ->
+            if (isAdded && view != null) { // Essential safety check
+                ActionDatabase.updateTransactions(transactions)
+                expenseAdapter.notifyDataSetChanged()
+                updateSummaryCards()
+            }
         }
     }
 
@@ -242,5 +254,10 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnActionUpdateListener {
 
         fetchDataFromFirebase()
         view?.findViewById<TextView>(R.id.lbl_user_name)?.text = UserData.name
+    }
+
+    override fun onPause() {
+        super.onPause()
+        FireStoreManager.stopAllListeners() // Prevents background crashes and leaks
     }
 }

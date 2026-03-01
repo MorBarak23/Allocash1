@@ -3,7 +3,8 @@
     <color name="bg_light_cyan">#ECF5F6</color>
     <color name="brand_teal">#00BFA5</color>
     <color name="brand_teal_dark">#009688</color>
-    <color name="card_white">#FFFFFF</color>
+    <color name="card_white">#ffffff</color>
+    <color name="card_white2">#ffffff</color>
 
     <color name="text_primary">#1E293B</color>
     <color name="text_secondary">#64748B</color>

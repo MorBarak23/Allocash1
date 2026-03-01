@@ -39,6 +39,9 @@ class MainActivity : BaseActivity() {
     // Updated: Dialog now adapts to Dark Mode by using R.color.card_white
     private fun checkInvites() {
         FireStoreManager.listenForInvites { inviteData ->
+
+            if (isFinishing || isDestroyed) return@listenForInvites
+
             val from = inviteData["fromName"] as String
             val context = this
 

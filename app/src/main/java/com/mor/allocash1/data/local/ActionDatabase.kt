@@ -7,6 +7,8 @@ import com.mor.allocash1.data.classes.WeeklyDetail
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.ChronoField
+import java.time.Instant
+import java.time.ZoneId
 
 // In-memory data management for transactions and monthly budgets (Actions).
 object ActionDatabase {
@@ -21,12 +23,12 @@ object ActionDatabase {
     fun getIncomeActions(): List<Action> = incomeActions
     fun getAllTransactions(): List<Transaction> = transactions
 
-    // Returns actions from the last 72 hours
+    // Returns actions from the last 7 days (168 hours)
     fun getRecentTransactions(): List<Transaction> {
-        val seventyTwoHoursAgo = System.currentTimeMillis() - (72 * 60 * 60 * 1000)
-        return transactions.filter { it.timestamp >= seventyTwoHoursAgo }
+        // 7 days * 24 hours * 60 min * 60 sec * 1000 ms
+        val sevenDaysAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000L)
+        return transactions.filter { it.timestamp >= sevenDaysAgo }
     }
-
     // --- Sync Methods (Called by FireStoreManager) ---
 
     // Updates local action lists based on fresh cloud snapshots
@@ -44,8 +46,9 @@ object ActionDatabase {
     fun updateTransactions(newList: List<Transaction>) {
         transactions.clear()
         transactions.addAll(newList)
-        // Refresh weekly breakdown for all existing actions when new transactions arrive
+        // Updated: Refresh breakdown for BOTH income and expense actions to ensure full sync
         expenseActions.forEach { updateWeeklyBreakdown(it) }
+        incomeActions.forEach { updateWeeklyBreakdown(it) }
     }
 
     // --- Calculation Helpers ---
@@ -58,15 +61,15 @@ object ActionDatabase {
     // --- Weekly Breakdown Logic (Remains as core application logic) ---
 
     fun updateWeeklyBreakdown(action: Action) {
-        val now = java.time.LocalDate.now()
-        val daysInMonth = java.time.YearMonth.from(now).lengthOfMonth()
+        val now = LocalDate.now()
+        val daysInMonth = YearMonth.from(now).lengthOfMonth()
         val firstDayOfMonth = now.withDayOfMonth(1)
 
         action.weeklyDetails.clear()
         calculateWeeklySlices(action, firstDayOfMonth, now, daysInMonth)
     }
 
-    private fun calculateWeeklySlices(action: Action, start: java.time.LocalDate, now: java.time.LocalDate, totalDays: Int) {
+    private fun calculateWeeklySlices(action: Action, start: LocalDate, now: LocalDate, totalDays: Int) {
         var currentStart = start
         var weekIndex = 1
 
@@ -84,21 +87,26 @@ object ActionDatabase {
         }
     }
 
-    private fun calculateEndOfWeek(start: java.time.LocalDate, now: java.time.LocalDate, totalDays: Int): java.time.LocalDate {
-        val daysUntilEnd = 7 - start.get(java.time.temporal.ChronoField.DAY_OF_WEEK)
-        var end = start.plusDays(daysUntilEnd.toLong())
+    private fun calculateEndOfWeek(start: LocalDate, now: LocalDate, totalDays: Int): LocalDate {
+        // In ISO-8601: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
+        val dayOfWeek = start.get(ChronoField.DAY_OF_WEEK)
+        val daysUntilSaturday = (6 - dayOfWeek + 7) % 7
+
+        var end = start.plusDays(daysUntilSaturday.toLong())
+
+        // Ensure the slice doesn't cross the month boundary
         return if (end.month != now.month) now.withDayOfMonth(totalDays) else end
     }
 
-    private fun calculateSpentInPeriod(action: Action, start: java.time.LocalDate, end: java.time.LocalDate): Double {
+    private fun calculateSpentInPeriod(action: Action, start: LocalDate, end: LocalDate): Double {
         return transactions.filter {
-            // Correctly convert timestamp to LocalDate for accurate comparison
-            val tDate = java.time.Instant.ofEpochMilli(it.timestamp)
-                .atZone(java.time.ZoneId.systemDefault())
+            val tDate = Instant.ofEpochMilli(it.timestamp)
+                .atZone(ZoneId.systemDefault())
                 .toLocalDate()
 
+            // Updated: Matches the action category and its type (Income vs Expense)
             it.category == action.category &&
-                    it.isExpense &&
+                    it.isExpense == (action.category != CategoryType.INCOME) &&
                     !tDate.isBefore(start) &&
                     !tDate.isAfter(end)
         }.sumOf { it.amount }

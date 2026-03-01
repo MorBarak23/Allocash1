@@ -17,7 +17,7 @@
         android:layout_width="280dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@color/card_white"
+        android:background="@color/card_white2"
         app:itemIconTint="@color/text_primary"
         app:itemTextColor="@color/text_primary"
         app:itemRippleColor="@color/white_translucent"

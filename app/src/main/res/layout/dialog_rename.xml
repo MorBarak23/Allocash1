@@ -47,7 +47,7 @@
             android:layout_marginTop="24dp"
             android:text="Save Changes"
             android:backgroundTint="@color/text_primary"
-            android:textColor="@color/card_white"
+            android:textColor="@color/card_white2"
             app:cornerRadius="16dp" />
 
     </LinearLayout>

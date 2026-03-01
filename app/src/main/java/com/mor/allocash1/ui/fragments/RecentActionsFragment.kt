@@ -49,15 +49,16 @@ class RecentActionsFragment : Fragment(R.layout.fragment_recent_actions), OnActi
                         timestamp = (map["timestamp"] as? Long) ?: System.currentTimeMillis()
                     )
                 }
-
-                // Sync with DB to allow 72-hour filtering logic
+                // Sync with DB to allow 7-day filtering logic
                 ActionDatabase.updateTransactions(transactions)
-                adapter.updateList(transactions)
 
-                // Check if the filtered 72h list is empty
-                val recent72h = ActionDatabase.getRecentTransactions()
-                binding.rvRecentActions.visibility = if (recent72h.isEmpty()) View.GONE else View.VISIBLE
-                binding.root.findViewById<View>(R.id.layout_empty_recent)?.visibility = if (recent72h.isEmpty()) View.VISIBLE else View.GONE
+                // Retrieve and display ONLY the filtered 7-day list
+                val filteredRecent = ActionDatabase.getRecentTransactions()
+                adapter.updateList(filteredRecent)
+
+                // Manage visibility based on the filtered list
+                binding.rvRecentActions.visibility = if (filteredRecent.isEmpty()) View.GONE else View.VISIBLE
+                binding.root.findViewById<View>(R.id.layout_empty_recent)?.visibility = if (filteredRecent.isEmpty()) View.VISIBLE else View.GONE
             },
             onFailure = { error ->
                 android.widget.Toast.makeText(context, "Error: $error", android.widget.Toast.LENGTH_SHORT).show()

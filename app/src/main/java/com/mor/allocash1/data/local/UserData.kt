@@ -21,6 +21,7 @@ object UserData {
     var currencyCode: String = "ILS"
 
     // Internal storage for family members fetched from cloud
+    var familyId: String? = null
     private val familyMembers = mutableListOf<FamilyMember>()
 
     // Additional

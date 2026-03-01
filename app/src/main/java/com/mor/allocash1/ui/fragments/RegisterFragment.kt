@@ -20,6 +20,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         val inputEmail = view.findViewById<EditText>(R.id.input_reg_email)
         val inputPass = view.findViewById<EditText>(R.id.input_reg_password)
         val btnRegister = view.findViewById<Button>(R.id.btn_register_submit)
+        val btnBack = view.findViewById<View>(R.id.btn_reg_back)
 
         // Ensure consistency with MyProfile name length
         inputName.filters = arrayOf(InputFilter.LengthFilter(16))
@@ -35,6 +36,10 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                     onFailure = { error -> Toast.makeText(context, error, Toast.LENGTH_LONG).show() }
                 )
             }
+        }
+
+        btnBack.setOnClickListener {
+            parentFragmentManager.popBackStack()
         }
     }
 

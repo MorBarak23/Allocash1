@@ -17,14 +17,14 @@
         android:layout_height="64dp"
         android:padding="6dp"
         android:src="@drawable/ic_user"
-        app:tint="@color/card_white" />
+        app:tint="#ffffff" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="Welcome Back,"
-        android:textColor="@color/card_white"
+        android:textColor="#ffffff"
         android:textSize="14sp" />
 
     <TextView
@@ -32,7 +32,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="User Name"
-        android:textColor="@color/card_white"
+        android:textColor="#ffffff"
         android:textSize="20sp"
         android:textStyle="bold" />
 

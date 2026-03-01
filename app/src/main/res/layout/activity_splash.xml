@@ -17,7 +17,7 @@
     android:layout_centerHorizontal="true"
     android:layout_marginBottom="40dp"
     android:text="ALLOCASH"
-    android:textColor="@color/card_white"
+    android:textColor="@color/card_white2"
     android:textSize="24sp"
     android:textStyle="bold"
     android:letterSpacing="0.2" />

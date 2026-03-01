@@ -72,7 +72,7 @@
         android:layout_marginBottom="32dp"
         android:backgroundTint="@color/text_primary"
         android:text="Send Invitation"
-        android:textColor="@color/card_white"
+        android:textColor="@color/card_white2"
         android:textSize="18sp"
         android:textStyle="bold"
         app:cornerRadius="20dp"

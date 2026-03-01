@@ -8,6 +8,10 @@ import com.mor.allocash1.data.local.UserData
 object FireStoreManager {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+    // Variables to track listeners and prevent memory leaks
+    private var userProfileListener: com.google.firebase.firestore.ListenerRegistration? = null
+    private var actionsListener: com.google.firebase.firestore.ListenerRegistration? = null
+    private var transactionsListener: com.google.firebase.firestore.ListenerRegistration? = null
 
     // Volatile flag to skip biometric check right after manual login
     var isManualLoginSession: Boolean = false
@@ -33,7 +37,7 @@ object FireStoreManager {
             .addOnFailureListener { onFailure(it.message ?: "Registration failed") }
     }
 
-    // Direct O(1) write: Uses email address as the unique Document ID.
+    // Uses email address as the unique Document ID.
     private fun saveUserProfile(email: String, name: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
         val userMap = hashMapOf(
             "name" to name,
@@ -42,11 +46,11 @@ object FireStoreManager {
             "country" to "Israel",
             "currencySymbol" to "₪",
             "currencyCode" to "ILS",
+            "monthlySavingsGoal" to 500.0, // Default goal set during signup
             "isDarkMode" to false,
             "isBiometricEnabled" to false,
-            "familyId" to null // Default state is a private account
+            "familyId" to null
         )
-
         db.collection("users").document(email).set(userMap)
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it.message ?: "Profile data error") }
@@ -159,7 +163,6 @@ object FireStoreManager {
     //Links another user to the current user's family group.
     fun inviteUserToFamily(targetEmail: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
         val currentUserEmail = auth.currentUser?.email ?: return
-
         db.collection("users").document(currentUserEmail).get().addOnSuccessListener { document ->
             val familyId = document.getString("familyId") ?: currentUserEmail
             val inviterName = document.getString("name") ?: "Family Member"
@@ -169,15 +172,12 @@ object FireStoreManager {
                 "fromName" to inviterName,
                 "toEmail" to targetEmail,
                 "familyId" to familyId,
-                "currencySymbol" to (document.getString("currencySymbol") ?: "₪"), // Pass currency to new member
+                "currencySymbol" to (document.getString("currencySymbol") ?: "₪"),
                 "currencyCode" to (document.getString("currencyCode") ?: "ILS"),
+                "monthlySavingsGoal" to (document.getDouble("monthlySavingsGoal") ?: 500.0), // Goal included in invite
                 "status" to "pending"
             )
-
-            // Write to a dedicated invites collection
-            db.collection("invites").document(targetEmail).set(inviteData)
-                .addOnSuccessListener { onSuccess() }
-                .addOnFailureListener { onFailure(it.message ?: "Invite failed") }
+            db.collection("invites").document(targetEmail).set(inviteData).addOnSuccessListener { onSuccess() }
         }
     }
 
@@ -194,18 +194,13 @@ object FireStoreManager {
     // Updates user's familyId and currency to match the family group
     fun acceptFamilyInvite(inviteData: Map<String, Any>, onComplete: () -> Unit) {
         val email = auth.currentUser?.email ?: return
-        val familyId = inviteData["familyId"] as String
-        val symbol = inviteData["currencySymbol"] as String
-        val code = inviteData["currencyCode"] as String
-
         val updates = mapOf(
-            "familyId" to familyId,
-            "currencySymbol" to symbol,
-            "currencyCode" to code
+            "familyId" to inviteData["familyId"],
+            "currencySymbol" to inviteData["currencySymbol"],
+            "currencyCode" to inviteData["currencyCode"],
+            "monthlySavingsGoal" to (inviteData["monthlySavingsGoal"] as? Number)?.toDouble() // Syncing the shared goal
         )
-
         db.collection("users").document(email).update(updates).addOnSuccessListener {
-            // Remove the invite after acceptance
             db.collection("invites").document(email).delete()
             onComplete()
         }
@@ -217,34 +212,26 @@ object FireStoreManager {
      */
     fun listenToAllActions(onUpdate: (List<com.mor.allocash1.data.classes.Action>) -> Unit) {
         val email = auth.currentUser?.email ?: return
-        db.collection("users").document(email).get().addOnSuccessListener { userDoc ->
-            val familyId = userDoc.getString("familyId") ?: email
+        //Use cached familyId if available, otherwise fetch once
+        val familyId = UserData.familyId ?: email
 
-            // Fetch all actions for this family regardless of the date
-            db.collection("actions")
-                .whereEqualTo("familyId", familyId)
-                .addSnapshotListener { snapshots, _ ->
-                    val actions = snapshots?.map { doc ->
-                        // We extract the timestamp to check if it's from a previous month
-                        val actionTimestamp = doc.getLong("timestamp") ?: 0L
-
-                        val action = com.mor.allocash1.data.classes.Action(
-                            title = doc.getString("title") ?: "",
-                            limit = doc.getDouble("amount") ?: 0.0,
-                            currentAmount = doc.getDouble("currentAmount") ?: 0.0,
-                            category = mapCategory(doc.getString("category"))
-                        )
-
-                        // Logic: If action is from an old month, trigger a reset
-                        if (isFromPreviousMonth(actionTimestamp)) {
-                            resetActionForNewMonth(doc.id)
-                        }
-
-                        action
-                    } ?: emptyList()
-                    onUpdate(actions)
-                }
-        }
+        actionsListener?.remove() // Close previous before opening new
+        actionsListener = db.collection("actions")
+            .whereEqualTo("familyId", familyId)
+            .addSnapshotListener { snapshots, _ ->
+                val actions = snapshots?.map { doc ->
+                    val actionTimestamp = doc.getLong("timestamp") ?: 0L
+                    val action = com.mor.allocash1.data.classes.Action(
+                        title = doc.getString("title") ?: "",
+                        limit = doc.getDouble("amount") ?: 0.0,
+                        currentAmount = doc.getDouble("currentAmount") ?: 0.0,
+                        category = mapCategory(doc.getString("category"))
+                    )
+                    if (isFromPreviousMonth(actionTimestamp)) resetActionForNewMonth(doc.id)
+                    action
+                } ?: emptyList()
+                onUpdate(actions)
+            }
     }
 
     // Helper to check if a timestamp belongs to a month before the current one
@@ -269,24 +256,48 @@ object FireStoreManager {
 
     fun listenToTransactions(onUpdate: (List<com.mor.allocash1.data.classes.Transaction>) -> Unit) {
         val email = auth.currentUser?.email ?: return
-        db.collection("users").document(email).get().addOnSuccessListener { userDoc ->
-            val familyId = userDoc.getString("familyId") ?: email
+        val familyId = UserData.familyId ?: email
 
-            db.collection("transactions")
-                .whereEqualTo("familyId", familyId)
-                .addSnapshotListener { snapshots, _ ->
-                    val transactions = snapshots?.map { doc ->
-                        com.mor.allocash1.data.classes.Transaction(
-                            title = doc.getString("title") ?: "",
-                            amount = doc.getDouble("amount") ?: 0.0,
-                            category = mapCategory(doc.getString("category")), // Safe mapping
-                            isExpense = doc.getBoolean("isExpense") ?: true,
-                            timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis()
-                        )
-                    } ?: emptyList()
-                    onUpdate(transactions)
-                }
+        transactionsListener?.remove()
+        transactionsListener = db.collection("transactions")
+            .whereEqualTo("familyId", familyId)
+            .addSnapshotListener { snapshots, _ ->
+                val transactions = snapshots?.map { doc ->
+                    com.mor.allocash1.data.classes.Transaction(
+                        title = doc.getString("title") ?: "",
+                        amount = doc.getDouble("amount") ?: 0.0,
+                        category = mapCategory(doc.getString("category")),
+                        isExpense = doc.getBoolean("isExpense") ?: true,
+                        timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis()
+                    )
+                } ?: emptyList()
+                onUpdate(transactions)
+            }
+    }
+
+    fun listenToUserProfile(onUpdate: () -> Unit) {
+        val email = auth.currentUser?.email ?: return
+        userProfileListener?.remove()
+        userProfileListener = db.collection("users").document(email).addSnapshotListener { snapshot, _ ->
+            if (snapshot != null && snapshot.exists()) {
+                UserData.name = snapshot.getString("name") ?: UserData.name
+                UserData.monthlySavingsGoal = snapshot.getDouble("monthlySavingsGoal") ?: 500.0
+                UserData.currencySymbol = snapshot.getString("currencySymbol") ?: "₪"
+                UserData.currencyCode = snapshot.getString("currencyCode") ?: "ILS"
+                UserData.familyId = snapshot.getString("familyId")
+                onUpdate()
+            }
         }
+    }
+
+    // Function to stop all the listeners while not in Home Fragment
+    fun stopAllListeners() {
+        userProfileListener?.remove()
+        actionsListener?.remove()
+        transactionsListener?.remove()
+        userProfileListener = null
+        actionsListener = null
+        transactionsListener = null
     }
 
     //Fetches historical data for a specific month and year.
