@@ -71,7 +71,7 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun startMainActivity() {
-        // Crucial: Tell MainActivity that biometric was already handled here
+        // Tell MainActivity that biometric was already handled here
         FireStoreManager.isManualLoginSession = true
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)

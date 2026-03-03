@@ -214,11 +214,6 @@ open class BaseActivity : AppCompatActivity(), NavigationView.OnNavigationItemSe
 
     fun closeDrawer() { if (::drawerLayout.isInitialized) drawerLayout.closeDrawer(GravityCompat.START) }
 
-    fun toggleDrawer() {
-        if (!::drawerLayout.isInitialized) return
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) closeDrawer() else openDrawer()
-    }
-
     //Updates visibility of common header components.
     fun setHeaderVisibility(isVisible: Boolean) {
         val visibility = if (isVisible) View.VISIBLE else View.GONE

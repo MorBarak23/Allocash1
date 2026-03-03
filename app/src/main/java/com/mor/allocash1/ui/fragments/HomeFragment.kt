@@ -59,12 +59,10 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnActionUpdateListener {
 
         if (UserData.isBalanceVisible) {
             lblBalance.text = UserData.formatCurrency(balance)
-            // FIX: Change R.id to R.drawable
             icShowBalance.setImageResource(R.drawable.ic_eye)
         } else {
             val formatted = UserData.formatCurrency(balance)
             lblBalance.text = "•".repeat(formatted.length)
-            // FIX: Change R.id to R.drawable
             icShowBalance.setImageResource(R.drawable.ic_covered)
         }
 
@@ -128,7 +126,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnActionUpdateListener {
         btnConfirm.setOnClickListener {
             val newGoal = inputAmount.text.toString().toDoubleOrNull() ?: 500.0
             // Persist the new goal to Firestore
-            com.mor.allocash1.data.cloud.FireStoreManager.updateMonthlySavingsGoal(newGoal) {
+            FireStoreManager.updateMonthlySavingsGoal(newGoal) {
                 UserData.monthlySavingsGoal = newGoal
                 refreshCurrencyDisplay()
                 dialog.dismiss()
@@ -137,7 +135,7 @@ class HomeFragment : Fragment(R.layout.fragment_home), OnActionUpdateListener {
         dialog.show()
     }
 
-    // Maps local variables to XML IDs and sets up user-specific greetings.
+    // Maps local variables
     private fun initViews(view: View) {
         lblBalance = view.findViewById(R.id.lbl_balance_amount)
         lblExpense = view.findViewById(R.id.lbl_total_expense)

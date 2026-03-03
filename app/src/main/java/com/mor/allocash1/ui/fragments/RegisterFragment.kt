@@ -10,21 +10,34 @@ import androidx.fragment.app.Fragment
 import com.mor.allocash1.R
 import com.mor.allocash1.data.cloud.FireStoreManager
 
-// Registration screen featuring O(1) Firestore writes and email verification.
+// Registration screen performing Firestore writes and email verification.
 class RegisterFragment : Fragment(R.layout.fragment_register) {
+
+    private lateinit var inputName: EditText
+    private lateinit var inputEmail: EditText
+    private lateinit var inputPass: EditText
+    private lateinit var btnRegister: Button
+    private lateinit var btnBack: View
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val inputName = view.findViewById<EditText>(R.id.input_reg_name)
-        val inputEmail = view.findViewById<EditText>(R.id.input_reg_email)
-        val inputPass = view.findViewById<EditText>(R.id.input_reg_password)
-        val btnRegister = view.findViewById<Button>(R.id.btn_register_submit)
-        val btnBack = view.findViewById<View>(R.id.btn_reg_back)
+        initUI(view)
+        setupListeners()
+    }
+
+    private fun initUI(view: View) {
+        inputName = view.findViewById(R.id.input_reg_name)
+        inputEmail = view.findViewById(R.id.input_reg_email)
+        inputPass = view.findViewById(R.id.input_reg_password)
+        btnRegister = view.findViewById(R.id.btn_register_submit)
+        btnBack = view.findViewById(R.id.btn_reg_back)
 
         // Ensure consistency with MyProfile name length
         inputName.filters = arrayOf(InputFilter.LengthFilter(16))
+    }
 
+    private fun setupListeners() {
         btnRegister.setOnClickListener {
             val name = inputName.text.toString().trim()
             val email = inputEmail.text.toString().trim()

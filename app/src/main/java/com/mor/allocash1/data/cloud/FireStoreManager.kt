@@ -16,8 +16,6 @@ object FireStoreManager {
     // Volatile flag to skip biometric check right after manual login
     var isManualLoginSession: Boolean = false
 
-    fun isUserLoggedIn(): Boolean = auth.currentUser != null
-
     // Authenticates user and sets session flag on success.
     fun loginUser(email: String, pass: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
         auth.signInWithEmailAndPassword(email, pass)
@@ -37,7 +35,7 @@ object FireStoreManager {
             .addOnFailureListener { onFailure(it.message ?: "Registration failed") }
     }
 
-    // Uses email address as the unique Document ID.
+    // Saves the user profile by using email address as the unique Document ID.
     private fun saveUserProfile(email: String, name: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
         val userMap = hashMapOf(
             "name" to name,
@@ -106,22 +104,8 @@ object FireStoreManager {
             .addOnFailureListener { onComplete() }
     }
 
-    // Retrieves all actions for the current user, sorted by date.
-    fun getActions(onSuccess: (List<Map<String, Any>>) -> Unit, onFailure: (String) -> Unit) {
-        val email = auth.currentUser?.email ?: return
-
-        db.collection("actions")
-            .whereEqualTo("userEmail", email)
-            .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
-            .get()
-            .addOnSuccessListener { result ->
-                val actions = result.map { it.data }
-                onSuccess(actions)
-            }
-            .addOnFailureListener { onFailure(it.message ?: "Failed to fetch actions") }
-    }
-
-    // Updated to include familyId in every saved action document
+    // Initializes a new financial category in the cloud while automatically
+    // associating it with the user's specific family group ID for shared access.
     fun saveFinancialAction(title: String, amount: Double, category: String, isExpense: Boolean, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
         val email = auth.currentUser?.email ?: return
 
@@ -129,6 +113,7 @@ object FireStoreManager {
             val familyId = userDoc.getString("familyId") ?: email
             val timestamp = System.currentTimeMillis()
 
+            // Creates a primary budget or income document in the "actions" collection
             val actionData = hashMapOf(
                 "title" to title,
                 "amount" to amount,
@@ -141,7 +126,7 @@ object FireStoreManager {
             )
 
             db.collection("actions").add(actionData).addOnSuccessListener {
-                // If it's an income, we also record it as a transaction for history
+                // If it's an income, we also record it as a transaction for history / Recent Actions
                 if (!isExpense) {
                     val transactionMap = hashMapOf(
                         "title" to "Initial $title",
@@ -191,7 +176,7 @@ object FireStoreManager {
         }
     }
 
-    // Updates user's familyId and currency to match the family group
+    // Updates user's familyId, monthly saving goal and currency to match the family group
     fun acceptFamilyInvite(inviteData: Map<String, Any>, onComplete: () -> Unit) {
         val email = auth.currentUser?.email ?: return
         val updates = mapOf(
@@ -254,6 +239,7 @@ object FireStoreManager {
         )
     }
 
+    // Establishes a real-time listener for the family's transaction history and triggers a callback to synchronize data changes.
     fun listenToTransactions(onUpdate: (List<com.mor.allocash1.data.classes.Transaction>) -> Unit) {
         val email = auth.currentUser?.email ?: return
         val familyId = UserData.familyId ?: email
@@ -275,6 +261,7 @@ object FireStoreManager {
             }
     }
 
+    // Monitors real-time user profile updates to synchronize local state and trigger a UI refresh callback.
     fun listenToUserProfile(onUpdate: () -> Unit) {
         val email = auth.currentUser?.email ?: return
         userProfileListener?.remove()
@@ -300,7 +287,7 @@ object FireStoreManager {
         transactionsListener = null
     }
 
-    //Fetches historical data for a specific month and year.
+    //Fetches historical data for a specific month and year (History Fragment).
     fun getActionsByPeriod(month: Int, year: Int, onSuccess: (List<com.mor.allocash1.data.classes.Transaction>) -> Unit, onFailure: (String) -> Unit) {
         val email = auth.currentUser?.email ?: return
 
@@ -333,7 +320,7 @@ object FireStoreManager {
         }
     }
 
-    //Fetches transactions instead of budget actions for history screens
+    //Fetches transactions instead of budget actions for Recent Actions screen.
     fun getTransactions(onSuccess: (List<Map<String, Any>>) -> Unit, onFailure: (String) -> Unit) {
         val email = auth.currentUser?.email ?: return
 
@@ -414,17 +401,18 @@ object FireStoreManager {
             }
     }
 
-    // Adds a history record and updates the budget currentAmount
+    // Records a new transaction in the history log and updates the balance of its parent budget category.
     fun addTransactionAndUpdateAction(actionTitle: String, transactionTitle: String, amount: Double, category: String, isExpense: Boolean, onComplete: () -> Unit) {
         val email = auth.currentUser?.email ?: return
 
+        // Creates a detailed transaction entry in the cloud, capturing the amount, title, and timestamp for historical tracking.
         db.collection("users").document(email).get().addOnSuccessListener { userDoc ->
             val familyId = userDoc.getString("familyId") ?: email
 
             val transactionMap = hashMapOf(
                 "title" to transactionTitle,
                 "amount" to amount,
-                "category" to category, // Added this field to fix the "Other" bug
+                "category" to category,
                 "isExpense" to isExpense,
                 "parentAction" to actionTitle,
                 "userEmail" to email,

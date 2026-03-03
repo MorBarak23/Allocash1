@@ -231,7 +231,7 @@ class ActionAdapter(
         App.Companion.applyGlobalUiSettings(bottomSheetDialog.window!!)
     }
 
-    // New: Displays a dialog to modify the monthly budget limit
+    // Displays a dialog to modify the monthly budget limit
     private fun showEditAmountDialog(action: Action, position: Int, context: Context) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_transaction, null)
         val dialog = AlertDialog.Builder(context, R.style.CustomDialogTheme).setView(dialogView).create()

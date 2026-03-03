@@ -67,3 +67,13 @@ object UserData {
         com.mor.allocash1.data.cloud.FireStoreManager.updateUserProfile(updates, {}, {})
     }
 }
+
+
+
+
+
+
+
+
+
+

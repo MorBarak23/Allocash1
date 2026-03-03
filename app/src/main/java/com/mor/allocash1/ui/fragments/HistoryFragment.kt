@@ -24,6 +24,10 @@ class HistoryFragment : Fragment(R.layout.fragment_history) {
     private lateinit var lblTotalExpense: TextView
     private lateinit var layoutEmptyState: LinearLayout
     private lateinit var rvHistory: RecyclerView
+
+    private val months = arrayOf("January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December")
+
     // Default selection initialized to current system date
     private var selectedMonth = Calendar.getInstance().get(Calendar.MONTH)
     private var selectedYear = Calendar.getInstance().get(Calendar.YEAR)
@@ -61,8 +65,6 @@ class HistoryFragment : Fragment(R.layout.fragment_history) {
 
     // Configures the month dropdown with names and selection logic.
     private fun setupMonthSpinner(view: View) {
-        val months = arrayOf("January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December")
         val monthAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, months)
         val spinnerMonth = view.findViewById<AutoCompleteTextView>(R.id.spinner_month)
 
@@ -90,9 +92,6 @@ class HistoryFragment : Fragment(R.layout.fragment_history) {
 
     // Main data loading function that updates UI and handles empty states.
     private fun loadData() {
-        val months = arrayOf("January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December")
-
         lblSelectedDate.text = "${months[selectedMonth]} $selectedYear"
 
         // Call FireStoreManager to get actions filtered by month and year

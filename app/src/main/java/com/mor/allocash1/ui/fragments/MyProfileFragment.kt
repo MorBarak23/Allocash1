@@ -39,8 +39,6 @@ class MyProfileFragment : Fragment(R.layout.fragment_my_profile) {
         // Reset system padding for immersive UI
         requireActivity().findViewById<View>(R.id.main_fragment_container)?.setPadding(0, 0, 0, 0)
 
-
-
         initViews(view)
         setupNavigation(view)
         setupEditableFields()

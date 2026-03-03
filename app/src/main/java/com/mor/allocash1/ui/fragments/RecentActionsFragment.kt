@@ -27,7 +27,6 @@ class RecentActionsFragment : Fragment(R.layout.fragment_recent_actions), OnActi
 
     // Initializes the recycler view with transaction data.
     private fun setupRecyclerView() {
-        val recentData = ActionDatabase.getRecentTransactions()
         adapter = TransactionAdapter(mutableListOf(), this)
         binding.rvRecentActions.adapter = adapter
 

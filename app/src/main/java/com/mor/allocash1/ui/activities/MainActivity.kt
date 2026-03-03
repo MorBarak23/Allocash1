@@ -34,9 +34,7 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    // MainActivity.kt
-
-    // Updated: Dialog now adapts to Dark Mode by using R.color.card_white
+    // Check's if there is an invite to the current user
     private fun checkInvites() {
         FireStoreManager.listenForInvites { inviteData ->
 
@@ -60,7 +58,6 @@ class MainActivity : BaseActivity() {
 
             dialog.show()
 
-            // Fix: Use card_white instead of hardcoded WHITE to support Dark Mode
             dialog.window?.let { window ->
                 val bg = android.graphics.drawable.GradientDrawable().apply {
                     cornerRadius = 48f

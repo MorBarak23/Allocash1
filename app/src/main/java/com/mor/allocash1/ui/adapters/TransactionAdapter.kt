@@ -43,6 +43,11 @@ class TransactionAdapter(private var list: List<Transaction>, private val update
         }
     }
 
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransactionViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.recent_actions, parent, false)
+        return TransactionViewHolder(view)
+    }
+
     // Binds the transaction's text, icons, and formatted date to the views.
     private fun bindTransactionData(holder: TransactionViewHolder, item: Transaction) {
         holder.lblTitle.text = item.title
@@ -86,11 +91,6 @@ class TransactionAdapter(private var list: List<Transaction>, private val update
 
         bottomSheet.show()
         App.Companion.applyGlobalUiSettings(bottomSheet.window!!)
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransactionViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.recent_actions, parent, false)
-        return TransactionViewHolder(view)
     }
 
     override fun getItemCount(): Int = list.size

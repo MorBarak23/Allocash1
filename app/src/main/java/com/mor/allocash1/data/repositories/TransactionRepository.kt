@@ -6,17 +6,6 @@ import java.util.Calendar
 
 object TransactionRepository {
 
-    //Fetches transactions filtered by month and year. Ready for future server integration.
-    fun getTransactionsByMonth(month: Int, year: Int): List<Transaction> {
-        // Currently fetching from local Database
-        val allTransactions = ActionDatabase.getAllTransactions()
-
-        return allTransactions.filter {
-            val cal = Calendar.getInstance().apply { timeInMillis = it.timestamp }
-            cal.get(Calendar.MONTH) == month && cal.get(Calendar.YEAR) == year
-        }.sortedByDescending { it.timestamp }
-    }
-
     //Calculates totals for the selected period.
     fun getMonthlyTotals(transactions: List<Transaction>): Pair<Double, Double> {
         var income = 0.0

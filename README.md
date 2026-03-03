@@ -65,6 +65,8 @@ Allocash is built on a modern, scalable architecture:
 
 <p align="center">
   <img src="Screenshots/img_settings.png" width="260" title="User Identity">
+  <img src="Screenshots/img_dark_mode1.png" width="260" title="Dark Mode">
+  <img src="Screenshots/img_dark_mode2.png" width="260" title="Dark Mode">
 </p>
 
 ---
