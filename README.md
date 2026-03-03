@@ -27,7 +27,8 @@ Managing daily expenses and family budgets is often scattered across multiple ap
 ### 📊 Advanced Transaction Management
 * **Weekly Breakdown:** Intelligent algorithms that slice monthly budgets into weekly targets to ensure you never overspend.
 * **Categorized Tracking:** Separate management for Incomes and Expenses with customizable budget limits.
-* **72-Hour Quick View:** Instant access to the most recent transactions to keep your daily spending in check.
+* **7-Days Quick View:** Instant access to the most recent transactions to keep your daily spending in check.
+* **History View:** Easy access to you transactions history for up to 3 year filtered by year & month.
 * **Automated Monthly Reset:** On the first of every month, your spending totals reset while keeping your budget rows intact for a fresh start.
 
 ---
